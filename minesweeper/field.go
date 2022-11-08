@@ -8,11 +8,11 @@ import (
 	"time"
 )
 
-type Field struct {
+type Game struct {
+	field         [][]Cell
 	width, height int
 	level         int
 	bombs         int
-	field         [][]Cell
 	openedCells   int
 	markedCells   int
 	markBalance   int
@@ -26,39 +26,47 @@ type Cell struct {
 	isMarked    bool
 }
 
-func (f Field) checkVin() (ok bool) {
-	if f.markedCells == f.bombs &&
-		f.openedCells == f.width*f.height-f.bombs &&
-		f.markBalance == 0 {
+func (game Game) isWin() (ok bool) {
+	if game.markedCells == game.bombs &&
+		game.openedCells == game.width*game.height-game.bombs &&
+		game.markBalance == 0 {
 		ok = true
 	}
 	return
 }
 
-func (f Field) unmarkCell(cell Cell) {
+func (game Game) unmarkCell(cell Cell) {
 	if !cell.isBomb {
-		f.markBalance++
+		game.markBalance++
 	}
 
 	cell.isMarked = false
-	f.markedCells--
+	game.markedCells--
 }
 
-func (f Field) markCell(cell Cell) {
+func (game Game) markCell(cell Cell) (bool, error) {
+	if cell.isMarked {
+		return false, errors.New("ЯЧЕЙКА УЖЕ ОТМЕЧЕНА")
+	}
+
 	if !cell.isBomb {
-		f.markBalance--
+		game.markBalance--
 	}
 
 	cell.isMarked = true
-	f.markedCells++
+	game.markedCells++
 
-	f.checkVin()
+	if game.isWin() {
+		return true, errors.New("ПОБЕДА")
+	}
+
+	return true, nil
 }
 
-func (f Field) calcBombsAround(cell Cell) (count int) {
-	for i := int(math.Min(float64(cell.y-1), 0)); i < int(math.Min(float64(cell.y+1), float64(f.height))); i++ {
-		for j := int(math.Min(float64(cell.x-1), 0)); j < int(math.Max(float64(cell.x+1), float64(f.width))); j++ {
-			if f.field[i][j].isBomb {
+func (game Game) calcBombsAround(cell Cell) (count int) {
+	for i := int(math.Min(float64(cell.y-1), 0)); i < int(math.Min(float64(cell.y+1), float64(game.height))); i++ {
+		for j := int(math.Min(float64(cell.x-1), 0)); j < int(math.Max(float64(cell.x+1), float64(game.width))); j++ {
+			if game.field[i][j].isBomb {
 				count++
 			}
 		}
@@ -66,55 +74,55 @@ func (f Field) calcBombsAround(cell Cell) (count int) {
 	return
 }
 
-func (f Field) openCell(cell Cell) (bool, error) {
+func (game Game) openCell(cell Cell) (bool, error) {
 	if cell.isBomb {
-		return false, errors.New("BOMB")
+		return false, errors.New("БОМБА")
 	}
 
-	if cell.bombsAround = f.calcBombsAround(cell); cell.bombsAround == 0 {
-		for i := int(math.Min(float64(cell.y-1), 0)); i < int(math.Min(float64(cell.y+1), float64(f.height))); i++ {
-			for j := int(math.Min(float64(cell.x-1), 0)); j < int(math.Max(float64(cell.x+1), float64(f.width))); j++ {
+	if cell.bombsAround = game.calcBombsAround(cell); cell.bombsAround == 0 {
+		for i := int(math.Min(float64(cell.y-1), 0)); i < int(math.Min(float64(cell.y+1), float64(game.height))); i++ {
+			for j := int(math.Min(float64(cell.x-1), 0)); j < int(math.Max(float64(cell.x+1), float64(game.width))); j++ {
 				if i != cell.y || j != cell.x {
-					_, _ = f.openCell(f.field[i][j])
+					_, _ = game.openCell(game.field[i][j])
 				}
 			}
 		}
 	}
 
 	cell.isOpened = true
-	f.openedCells++
+	game.openedCells++
 
-	f.checkVin()
+	game.isWin()
 	return true, nil
 }
 
-func (f Field) initField(level int) (bool, error) {
-	switch f.level = level; f.level {
+func (game Game) initField(level int) (bool, error) {
+	switch game.level = level; game.level {
 	case 1:
-		f.width = EasyWidth
-		f.height = EasyHeight
-		f.bombs = EasyBombs
+		game.width = EasyWidth
+		game.height = EasyHeight
+		game.bombs = EasyBombs
 	case 2:
-		f.width = MediumWidth
-		f.height = MediumHeight
-		f.bombs = MediumBombs
+		game.width = MediumWidth
+		game.height = MediumHeight
+		game.bombs = MediumBombs
 	case 3:
-		f.width = HardWidth
-		f.height = HardHeight
-		f.bombs = HardBombs
+		game.width = HardWidth
+		game.height = HardHeight
+		game.bombs = HardBombs
 	default:
 		return false, errors.New("UNKNOWN LEVEL")
 	}
 	return true, nil
 }
 
-func (f Field) initCells() {
-	f.field = make([][]Cell, f.height)
-	for i := 0; i < f.height; i++ {
-		f.field[i] = make([]Cell, f.width)
-		for j := 0; j < f.width; j++ {
-			f.field[i][j].x = i
-			f.field[i][j].y = j
+func (game Game) initCells() {
+	game.field = make([][]Cell, game.height)
+	for i := 0; i < game.height; i++ {
+		game.field[i] = make([]Cell, game.width)
+		for j := 0; j < game.width; j++ {
+			game.field[i][j].x = i
+			game.field[i][j].y = j
 		}
 	}
 }
@@ -130,20 +138,20 @@ func getBombsLocation(x, y, num int) ([]int, []int) {
 	return xs, ys
 }
 
-func (f Field) generateBombs() {
-	xs, ys := getBombsLocation(f.width, f.width, f.bombs)
+func (game Game) generateBombs() {
+	xs, ys := getBombsLocation(game.width, game.width, game.bombs)
 
-	for i := 0; i < f.bombs; i++ {
-		f.field[xs[i]][ys[i]].isBomb = true
+	for i := 0; i < game.bombs; i++ {
+		game.field[xs[i]][ys[i]].isBomb = true
 	}
 }
 
-func (f Field) init(level int) {
-	_, err := f.initField(level)
+func (game Game) init(level int) {
+	_, err := game.initField(level)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	f.initCells()
-	f.generateBombs()
+	game.initCells()
+	game.generateBombs()
 }
