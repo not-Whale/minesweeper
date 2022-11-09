@@ -55,7 +55,7 @@ func (game *Game) unmarkCell(cell Cell) error {
 	}
 
 	if !cell.isMarked {
-		return errCellIsNotMarked{cell.x, cell.y}
+		return errCellIsAlreadyNotMarked{cell.x, cell.y}
 	}
 
 	if !cell.isBomb {
@@ -75,7 +75,7 @@ func (game *Game) markCell(cell Cell) error {
 	}
 
 	if cell.isMarked {
-		return errCellIsMarked{cell.x, cell.y}
+		return errCellIsAlreadyMarked{cell.x, cell.y}
 	}
 
 	if !cell.isBomb {

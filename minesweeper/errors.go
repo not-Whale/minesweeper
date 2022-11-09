@@ -4,11 +4,11 @@ import (
 	"fmt"
 )
 
-type errCellIsMarked struct {
+type errCellIsAlreadyMarked struct {
 	x, y int
 }
 
-type errCellIsNotMarked struct {
+type errCellIsAlreadyNotMarked struct {
 	x, y int
 }
 
@@ -24,11 +24,11 @@ type errYouWin struct{}
 
 type errUnknownLevel int
 
-func (e errCellIsMarked) Error() string {
+func (e errCellIsAlreadyMarked) Error() string {
 	return fmt.Sprintf("ЯЧЕЙКА [%v, %v] УЖЕ ОТМЕЧЕНА", e.x, e.y)
 }
 
-func (e errCellIsNotMarked) Error() string {
+func (e errCellIsAlreadyNotMarked) Error() string {
 	return fmt.Sprintf("ЯЧЕЙКА [%v, %v] И ТАК НЕ ОТМЕЧЕНА", e.x, e.y)
 }
 
