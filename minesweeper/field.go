@@ -1,10 +1,10 @@
 package minesweeper
 
 import (
-	"errors"
-	"log"
+	"fmt"
 	"math"
 	"math/rand"
+	"os"
 	"time"
 )
 
@@ -26,46 +26,65 @@ type Cell struct {
 	isMarked    bool
 }
 
-func (game Game) isWin() (ok bool) {
+func (game *Game) openAll() {
+	for i := 0; i < game.height; i++ {
+		for j := 0; j < game.width; j++ {
+			if !game.field[i][j].isBomb && !game.field[i][j].isOpened {
+				_ = game.openCell(game.field[i][j])
+			}
+			if game.field[i][j].isBomb && !game.field[i][j].isMarked {
+				_ = game.markCell(game.field[i][j])
+			}
+		}
+	}
+}
+
+func (game *Game) isWin() (ok bool) {
 	if game.markedCells == game.bombs &&
-		game.openedCells == game.width*game.height-game.bombs &&
+		// game.openedCells == game.width*game.height-game.bombs &&
 		game.markBalance == 0 {
 		ok = true
 	}
 	return
 }
 
-func (game Game) unmarkCell(cell Cell) {
+func (game *Game) unmarkCell(cell Cell) error {
+	if !cell.isMarked {
+		return errCellIsNotMarked{cell.x, cell.y}
+	}
+
 	if !cell.isBomb {
 		game.markBalance++
 	}
 
-	cell.isMarked = false
+	game.field[cell.y][cell.x].isMarked = false
 	game.markedCells--
+
+	return nil
 }
 
-func (game Game) markCell(cell Cell) (bool, error) {
+func (game *Game) markCell(cell Cell) error {
 	if cell.isMarked {
-		return false, errors.New("ЯЧЕЙКА УЖЕ ОТМЕЧЕНА")
+		return errCellIsMarked{cell.x, cell.y}
 	}
 
 	if !cell.isBomb {
 		game.markBalance--
 	}
 
-	cell.isMarked = true
+	game.field[cell.y][cell.x].isMarked = true
 	game.markedCells++
 
 	if game.isWin() {
-		return true, errors.New("ПОБЕДА")
+		return errYouWin{}
 	}
 
-	return true, nil
+	return nil
 }
 
-func (game Game) calcBombsAround(cell Cell) (count int) {
-	for i := int(math.Min(float64(cell.y-1), 0)); i < int(math.Min(float64(cell.y+1), float64(game.height))); i++ {
-		for j := int(math.Min(float64(cell.x-1), 0)); j < int(math.Max(float64(cell.x+1), float64(game.width))); j++ {
+func (game *Game) calcBombsAround(cell Cell) (count int) {
+	for i := int(math.Max(float64(cell.y-1), 0)); i <= int(math.Min(float64(cell.y+1), float64(game.height-1))); i++ {
+		for j := int(math.Max(float64(cell.x-1), 0)); j <= int(math.Min(float64(cell.x+1), float64(game.width-1))); j++ {
 			if game.field[i][j].isBomb {
 				count++
 			}
@@ -74,29 +93,33 @@ func (game Game) calcBombsAround(cell Cell) (count int) {
 	return
 }
 
-func (game Game) openCell(cell Cell) (bool, error) {
+func (game *Game) openCell(cell Cell) error {
 	if cell.isBomb {
-		return false, errors.New("БОМБА")
+		return errGameOver{cell.x, cell.y}
 	}
 
-	if cell.bombsAround = game.calcBombsAround(cell); cell.bombsAround == 0 {
-		for i := int(math.Min(float64(cell.y-1), 0)); i < int(math.Min(float64(cell.y+1), float64(game.height))); i++ {
-			for j := int(math.Min(float64(cell.x-1), 0)); j < int(math.Max(float64(cell.x+1), float64(game.width))); j++ {
-				if i != cell.y || j != cell.x {
-					_, _ = game.openCell(game.field[i][j])
+	game.openedCells++
+	game.field[cell.y][cell.x].isOpened = true
+	game.field[cell.y][cell.x].bombsAround = game.calcBombsAround(cell)
+
+	if game.field[cell.y][cell.x].bombsAround == 0 {
+		for i := int(math.Max(float64(cell.y-1), 0)); i <= int(math.Min(float64(cell.y+1), float64(game.height-1))); i++ {
+			for j := int(math.Max(float64(cell.x-1), 0)); j <= int(math.Min(float64(cell.x+1), float64(game.width-1))); j++ {
+				if !game.field[i][j].isOpened {
+					_ = game.openCell(game.field[i][j])
 				}
 			}
 		}
 	}
 
-	cell.isOpened = true
-	game.openedCells++
+	if game.isWin() {
+		return errYouWin{}
+	}
 
-	game.isWin()
-	return true, nil
+	return nil
 }
 
-func (game Game) initField(level int) (bool, error) {
+func (game *Game) initField(level int) error {
 	switch game.level = level; game.level {
 	case 1:
 		game.width = EasyWidth
@@ -111,47 +134,61 @@ func (game Game) initField(level int) (bool, error) {
 		game.height = HardHeight
 		game.bombs = HardBombs
 	default:
-		return false, errors.New("UNKNOWN LEVEL")
+		return errUnknownLevel(game.level)
 	}
-	return true, nil
+	return nil
 }
 
-func (game Game) initCells() {
+func (game *Game) initCells() {
 	game.field = make([][]Cell, game.height)
 	for i := 0; i < game.height; i++ {
 		game.field[i] = make([]Cell, game.width)
 		for j := 0; j < game.width; j++ {
-			game.field[i][j].x = i
-			game.field[i][j].y = j
+			game.field[i][j].x = j
+			game.field[i][j].y = i
 		}
 	}
 }
 
-func getBombsLocation(x, y, num int) ([]int, []int) {
+func generateBombsCoordinates(width, height, bombs int) ([]int, []int) {
 	rand.Seed(time.Now().Unix())
 
-	xs, ys := make([]int, num), make([]int, num)
-	for i := 0; i < num; i++ {
-		xs[i] = rand.Intn(x)
-		ys[i] = rand.Intn(y)
+	widthCoords, heightCoords := make([]int, bombs), make([]int, bombs)
+	for i := 0; i < bombs; i++ {
+		widthCoords[i] = rand.Intn(width)
+		heightCoords[i] = rand.Intn(height)
 	}
-	return xs, ys
+
+	uniqueStart := 0
+	for uniqueStart != bombs {
+		for i := uniqueStart; i < bombs; i++ {
+			for j := i + 1; j < bombs; j++ {
+				if widthCoords[i] == widthCoords[j] && heightCoords[i] == heightCoords[j] {
+					widthCoords[j] = rand.Intn(width)
+					heightCoords[j] = rand.Intn(height)
+					j--
+				}
+			}
+			uniqueStart++
+		}
+	}
+
+	return widthCoords, heightCoords
 }
 
-func (game Game) generateBombs() {
-	xs, ys := getBombsLocation(game.width, game.width, game.bombs)
-
+func (game *Game) generateBombs() {
+	widthCoords, heightCoords := generateBombsCoordinates(game.width, game.height, game.bombs)
 	for i := 0; i < game.bombs; i++ {
-		game.field[xs[i]][ys[i]].isBomb = true
+		game.field[heightCoords[i]][widthCoords[i]].isBomb = true
 	}
 }
 
-func (game Game) init(level int) {
-	_, err := game.initField(level)
+func (game *Game) init(level int) {
+	err := game.initField(level)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
-
 	game.initCells()
 	game.generateBombs()
 }
