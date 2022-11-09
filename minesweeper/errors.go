@@ -37,37 +37,37 @@ type errYouWin struct{}
 type errUnknownLevel int
 
 func (e errCellIsAlreadyMarked) Error() string {
-	return fmt.Sprintf("Ячейка [%v, %v] уже отмечена!", e.x, e.y)
+	return fmt.Sprintf("%sЯчейка [%v, %v] уже отмечена!%s", ErrorColor, e.x, e.y, ResetColor)
 }
 
 func (e errCellIsAlreadyNotMarked) Error() string {
-	return fmt.Sprintf("Ячейка [%v, %v] и так не отмечена!", e.x, e.y)
+	return fmt.Sprintf("%sЯчейка [%v, %v] и так не отмечена!%s", ErrorColor, e.x, e.y, ResetColor)
 }
 
 func (e errCellIsAlreadyOpened) Error() string {
-	return fmt.Sprintf("Ячейка [%v, %v] уже открыта!", e.x, e.y)
+	return fmt.Sprintf("%sЯчейка [%v, %v] уже открыта!%s", ErrorColor, e.x, e.y, ResetColor)
 }
 
 func (e errGameOver) Error() string {
-	return fmt.Sprintf("Вы проиграли! В ячейке [%v, %v] оказалась бомба!", e.x, e.y)
+	return fmt.Sprintf("%sВы проиграли! В ячейке [%v, %v] оказалась бомба!%s", ErrorColor, e.x, e.y, ResetColor)
 }
 
 func (e errOutOfRange) Error() string {
-	return fmt.Sprintf("Ячейка [%v, %v] находится за пределами игрового поля!", e.x, e.y)
+	return fmt.Sprintf("%sЯчейка [%v, %v] находится за пределами игрового поля!%s", ErrorColor, e.x, e.y, ResetColor)
 }
 
 func (e errMarkOpenedCell) Error() string {
-	return fmt.Sprintf("Ячейка [%v, %v], которую Вы хотите отметить, открыта!", e.x, e.y)
+	return fmt.Sprintf("%sЯчейка [%v, %v], которую Вы хотите отметить, открыта!%s", ErrorColor, e.x, e.y, ResetColor)
 }
 
 func (e errOpenMarkedCell) Error() string {
-	return fmt.Sprintf("Ячейка [%v, %v], которую Вы хотите открыть, отмечена! Уберите метку и попробуйте еще раз!", e.x, e.y)
+	return fmt.Sprintf("%sЯчейка [%v, %v], которую Вы хотите открыть, отмечена! Уберите метку и попробуйте еще раз!%s", ErrorColor, e.x, e.y, ResetColor)
 }
 
 func (e errUnknownLevel) Error() string {
-	return fmt.Sprintf("Неизвестный уровень сложности %v!", int(e))
+	return fmt.Sprintf("%sНеизвестный уровень сложности \"%v\"!%s", ErrorColor, int(e), ResetColor)
 }
 
 func (e errYouWin) Error() string {
-	return "Поздравляю! Вы победили!"
+	return fmt.Sprintf("%sПоздравляю! Вы победили!%s", WinColor, ResetColor)
 }

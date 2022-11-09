@@ -16,3 +16,6 @@ const ResetColor = "\033[0m"
 const RedColor = "\033[0;30;41m"
 const YellowColor = "\033[0;30;43m"
 const BlueColor = "\033[0;37;44m"
+
+const ErrorColor = "\033[0;31m"
+const WinColor = "\033[0;32m"
