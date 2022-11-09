@@ -117,6 +117,10 @@ func (game *Game) openCell(cell Cell) error {
 		return errGameOver{cell.x, cell.y}
 	}
 
+	if cell.isOpened {
+		return errCellIsAlreadyOpened{cell.x, cell.y}
+	}
+
 	if cell.isMarked {
 		return errOpenMarkedCell{cell.x, cell.y}
 	}

@@ -78,7 +78,7 @@ func StartConsoleGame() {
 			err := game.openCell(game.field[x][y])
 			if err != nil {
 				switch err.(type) {
-				case errOutOfRange, errOpenMarkedCell:
+				case errOutOfRange, errCellIsAlreadyOpened, errOpenMarkedCell:
 					fmt.Println(err)
 				case errGameOver, errYouWin:
 					fmt.Println(err)

@@ -12,6 +12,10 @@ type errCellIsAlreadyNotMarked struct {
 	x, y int
 }
 
+type errCellIsAlreadyOpened struct {
+	x, y int
+}
+
 type errGameOver struct {
 	x, y int
 }
@@ -38,6 +42,10 @@ func (e errCellIsAlreadyMarked) Error() string {
 
 func (e errCellIsAlreadyNotMarked) Error() string {
 	return fmt.Sprintf("Ячейка [%v, %v] и так не отмечена!", e.x, e.y)
+}
+
+func (e errCellIsAlreadyOpened) Error() string {
+	return fmt.Sprintf("Ячейка [%v, %v] уже открыта!", e.x, e.y)
 }
 
 func (e errGameOver) Error() string {
