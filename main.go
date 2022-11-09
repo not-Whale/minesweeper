@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/not-Whale/minesweeper/minesweeper"
+	"github.com/not-Whale/minesweeper/cli"
 )
 
 func main() {
-	minesweeper.StartConsoleGame()
+	cli.StartConsoleGame()
 }
