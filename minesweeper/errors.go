@@ -8,7 +8,7 @@ type errCellIsAlreadyMarked struct {
 	x, y int
 }
 
-type errCellIsAlreadyNotMarked struct {
+type errCellIsAlreadyUnmarked struct {
 	x, y int
 }
 
@@ -40,7 +40,7 @@ func (e errCellIsAlreadyMarked) Error() string {
 	return fmt.Sprintf("%sЯчейка [%v, %v] уже отмечена!%s", ErrorColor, e.x, e.y, ResetColor)
 }
 
-func (e errCellIsAlreadyNotMarked) Error() string {
+func (e errCellIsAlreadyUnmarked) Error() string {
 	return fmt.Sprintf("%sЯчейка [%v, %v] и так не отмечена!%s", ErrorColor, e.x, e.y, ResetColor)
 }
 

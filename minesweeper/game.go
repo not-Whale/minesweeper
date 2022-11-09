@@ -108,7 +108,7 @@ func unmarkHandler(game Game) {
 	err := game.unmarkCell(game.field[x][y])
 	if err != nil {
 		switch err.(type) {
-		case errOutOfRange, errCellIsAlreadyNotMarked:
+		case errOutOfRange, errCellIsAlreadyUnmarked:
 			fmt.Println(err)
 		default:
 			fmt.Println("Неизвестная ошибка!")
