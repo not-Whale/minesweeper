@@ -20,6 +20,14 @@ type errOutOfRange struct {
 	x, y int
 }
 
+type errMarkOpenedCell struct {
+	x, y int
+}
+
+type errOpenMarkedCell struct {
+	x, y int
+}
+
 type errYouWin struct{}
 
 type errUnknownLevel int
@@ -38,6 +46,14 @@ func (e errGameOver) Error() string {
 
 func (e errOutOfRange) Error() string {
 	return fmt.Sprintf("Ячейка [%v, %v] находится за пределами игрового поля!", e.x, e.y)
+}
+
+func (e errMarkOpenedCell) Error() string {
+	return fmt.Sprintf("Ячейка [%v, %v], которую Вы хотите отметить, открыта!", e.x, e.y)
+}
+
+func (e errOpenMarkedCell) Error() string {
+	return fmt.Sprintf("Ячейка [%v, %v], которую Вы хотите открыть, отмечена! Уберите метку и попробуйте еще раз!", e.x, e.y)
 }
 
 func (e errUnknownLevel) Error() string {

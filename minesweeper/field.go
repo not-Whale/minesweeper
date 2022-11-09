@@ -78,6 +78,10 @@ func (game *Game) markCell(cell Cell) error {
 		return errCellIsAlreadyMarked{cell.x, cell.y}
 	}
 
+	if cell.isOpened {
+		return errMarkOpenedCell{cell.x, cell.y}
+	}
+
 	if !cell.isBomb {
 		game.markBalance--
 	}
@@ -111,6 +115,10 @@ func (game *Game) openCell(cell Cell) error {
 
 	if cell.isBomb {
 		return errGameOver{cell.x, cell.y}
+	}
+
+	if cell.isMarked {
+		return errOpenMarkedCell{cell.x, cell.y}
 	}
 
 	game.openedCells++
