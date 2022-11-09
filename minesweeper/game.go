@@ -81,6 +81,8 @@ func StartConsoleGame() {
 				case errOutOfRange, errCellIsAlreadyOpened, errOpenMarkedCell:
 					fmt.Println(err)
 				case errGameOver, errYouWin:
+					game.openAll()
+					printField(game)
 					fmt.Println(err)
 					os.Exit(0)
 				default:
@@ -96,6 +98,8 @@ func StartConsoleGame() {
 				case errOutOfRange, errCellIsAlreadyMarked, errMarkOpenedCell:
 					fmt.Println(err)
 				case errYouWin:
+					game.openAll()
+					printField(game)
 					fmt.Println(err)
 					os.Exit(0)
 				default:
