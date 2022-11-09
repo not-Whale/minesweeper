@@ -65,6 +65,58 @@ func readCoordinates() (x int, y int) {
 	return
 }
 
+func openHandler(game Game) {
+	x, y := readCoordinates()
+	err := game.openCell(game.field[x][y])
+	if err != nil {
+		switch err.(type) {
+		case errOutOfRange, errCellIsAlreadyOpened, errOpenMarkedCell:
+			fmt.Println(err)
+		case errGameOver, errYouWin:
+			game.openAll()
+			printField(game)
+			fmt.Println(err)
+			os.Exit(0)
+		default:
+			fmt.Println("Неизвестная ошибка!")
+			os.Exit(1)
+		}
+	}
+}
+
+func markHandler(game Game) {
+	x, y := readCoordinates()
+	err := game.markCell(game.field[x][y])
+	if err != nil {
+		switch err.(type) {
+		case errOutOfRange, errCellIsAlreadyMarked, errMarkOpenedCell:
+			fmt.Println(err)
+		case errYouWin:
+			game.openAll()
+			printField(game)
+			fmt.Println(err)
+			os.Exit(0)
+		default:
+			fmt.Println("Неизвестная ошибка!")
+			os.Exit(1)
+		}
+	}
+}
+
+func unmarkHandler(game Game) {
+	x, y := readCoordinates()
+	err := game.unmarkCell(game.field[x][y])
+	if err != nil {
+		switch err.(type) {
+		case errOutOfRange, errCellIsAlreadyNotMarked:
+			fmt.Println(err)
+		default:
+			fmt.Println("Неизвестная ошибка!")
+			os.Exit(1)
+		}
+	}
+}
+
 func StartConsoleGame() {
 	game := Game{}
 	level := readLevel()
@@ -74,55 +126,15 @@ func StartConsoleGame() {
 		printField(game)
 		switch action := readAction(); action {
 		case 1:
-			x, y := readCoordinates()
-			err := game.openCell(game.field[x][y])
-			if err != nil {
-				switch err.(type) {
-				case errOutOfRange, errCellIsAlreadyOpened, errOpenMarkedCell:
-					fmt.Println(err)
-				case errGameOver, errYouWin:
-					game.openAll()
-					printField(game)
-					fmt.Println(err)
-					os.Exit(0)
-				default:
-					fmt.Println("Неизвестная ошибка!")
-					os.Exit(1)
-				}
-			}
+			openHandler(game)
 		case 2:
-			x, y := readCoordinates()
-			err := game.markCell(game.field[x][y])
-			if err != nil {
-				switch err.(type) {
-				case errOutOfRange, errCellIsAlreadyMarked, errMarkOpenedCell:
-					fmt.Println(err)
-				case errYouWin:
-					game.openAll()
-					printField(game)
-					fmt.Println(err)
-					os.Exit(0)
-				default:
-					fmt.Println("Неизвестная ошибка!")
-					os.Exit(1)
-				}
-			}
+			markHandler(game)
 		case 3:
-			x, y := readCoordinates()
-			err := game.unmarkCell(game.field[x][y])
-			if err != nil {
-				switch err.(type) {
-				case errOutOfRange, errCellIsAlreadyNotMarked:
-					fmt.Println(err)
-				default:
-					fmt.Println("Неизвестная ошибка!")
-					os.Exit(1)
-				}
-			}
+			unmarkHandler(game)
 		case 4:
 			os.Exit(0)
 		default:
-			fmt.Printf("Неизвестная команда! Попробуйте еще раз...")
+			fmt.Printf("%sНеизвестная команда! Попробуйте еще раз...%s", ErrorColor, ResetColor)
 		}
 	}
 }
