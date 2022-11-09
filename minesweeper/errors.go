@@ -16,6 +16,10 @@ type errGameOver struct {
 	x, y int
 }
 
+type errOutOfRange struct {
+	x, y int
+}
+
 type errYouWin struct{}
 
 type errUnknownLevel int
@@ -30,6 +34,10 @@ func (e errCellIsNotMarked) Error() string {
 
 func (e errGameOver) Error() string {
 	return fmt.Sprintf("ВЫ ПРОИГРАЛИ: В ЯЧЕЙКЕ [%v, %v] ОКАЗАЛАСЬ БОМБА", e.x, e.y)
+}
+
+func (e errOutOfRange) Error() string {
+	return fmt.Sprintf("ЯЧЕЙКА [%v, %v] НАХОДИТСЯ ЗА ПРЕДЕЛЯМИ ИГРОВОГО ПОЛЯ", e.x, e.y)
 }
 
 func (e errUnknownLevel) Error() string {

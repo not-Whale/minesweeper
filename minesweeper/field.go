@@ -49,6 +49,11 @@ func (game *Game) isWin() (ok bool) {
 }
 
 func (game *Game) unmarkCell(cell Cell) error {
+	if cell.y >= game.height || cell.x >= game.width ||
+		cell.y < 0 || cell.x < 0 {
+		return errOutOfRange{cell.x, cell.y}
+	}
+
 	if !cell.isMarked {
 		return errCellIsNotMarked{cell.x, cell.y}
 	}
@@ -64,6 +69,11 @@ func (game *Game) unmarkCell(cell Cell) error {
 }
 
 func (game *Game) markCell(cell Cell) error {
+	if cell.y >= game.height || cell.x >= game.width ||
+		cell.y < 0 || cell.x < 0 {
+		return errOutOfRange{cell.x, cell.y}
+	}
+
 	if cell.isMarked {
 		return errCellIsMarked{cell.x, cell.y}
 	}
@@ -94,6 +104,11 @@ func (game *Game) calcBombsAround(cell Cell) (count int) {
 }
 
 func (game *Game) openCell(cell Cell) error {
+	if cell.y >= game.height || cell.x >= game.width ||
+		cell.y < 0 || cell.x < 0 {
+		return errOutOfRange{cell.x, cell.y}
+	}
+
 	if cell.isBomb {
 		return errGameOver{cell.x, cell.y}
 	}
