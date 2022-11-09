@@ -77,22 +77,43 @@ func StartConsoleGame() {
 			x, y := readCoordinates()
 			err := game.openCell(game.field[x][y])
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				switch err.(type) {
+				case errOutOfRange, errOpenMarkedCell:
+					fmt.Println(err)
+				case errGameOver, errYouWin:
+					fmt.Println(err)
+					os.Exit(0)
+				default:
+					fmt.Println("Неизвестная ошибка!")
+					os.Exit(1)
+				}
 			}
 		case 2:
 			x, y := readCoordinates()
 			err := game.markCell(game.field[x][y])
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				switch err.(type) {
+				case errOutOfRange, errCellIsAlreadyMarked, errMarkOpenedCell:
+					fmt.Println(err)
+				case errYouWin:
+					fmt.Println(err)
+					os.Exit(0)
+				default:
+					fmt.Println("Неизвестная ошибка!")
+					os.Exit(1)
+				}
 			}
 		case 3:
 			x, y := readCoordinates()
 			err := game.unmarkCell(game.field[x][y])
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				switch err.(type) {
+				case errOutOfRange, errCellIsAlreadyNotMarked:
+					fmt.Println(err)
+				default:
+					fmt.Println("Неизвестная ошибка!")
+					os.Exit(1)
+				}
 			}
 		case 4:
 			os.Exit(0)
